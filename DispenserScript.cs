@@ -9,7 +9,6 @@ public class DispenserScript : MonoBehaviour {
 
     void Start() {
 
-
     }
 
     public void Dispense(float amount, int speed) {
@@ -18,8 +17,11 @@ public class DispenserScript : MonoBehaviour {
 
     }
 
-    void Update() {
+    public void ResetDispenser() {
+        dispenserFill = 0;
+    }
 
+    void Update() {
         dispenser_Fillment.fillAmount = dispenserFill;
 
     }
