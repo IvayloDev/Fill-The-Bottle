@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour {
 
@@ -19,7 +20,13 @@ public class GameManager : MonoBehaviour {
     private DispenserScript dispenser;
 
     public GameObject goalFillLine, currentFillLine;
+
+    // Panels
+    public GameObject pauseOverlayPanel, endScreenOverlayPanel;
     public Image secondSpeed, thirdSpeed;
+
+    // Animators
+    public Animator ScoreAnimator, goalFillLineAnim, RestartAnim, ShopAnim;
 
     float curFillLineAmount;
 
@@ -44,6 +51,11 @@ public class GameManager : MonoBehaviour {
 
     public void StartGame() {
 
+        endScreenOverlayPanel.SetActive(false);
+        pauseOverlayPanel.SetActive(false);
+
+        goalFillLineAnim.SetBool("LineSlideOut", true);
+
         // Set random position for the fill line the user has to reach.
         goalFillLine.transform.localPosition = new Vector3(-80, Random.Range(bottle.minAmount, bottle.maxAmount), 0);
 
@@ -61,16 +73,16 @@ public class GameManager : MonoBehaviour {
 
         switch (pourSpeed) {
             case 1:
-                secondSpeed.color = new Color32(255, 255, 255, 140);
-                thirdSpeed.color = new Color32(255, 255, 255, 140);
+                secondSpeed.enabled = false;
+                thirdSpeed.enabled = false;
                 break;
             case 2:
-                secondSpeed.color = new Color32(255, 255, 255, 255);
-                thirdSpeed.color = new Color32(255, 255, 255, 140);
+                secondSpeed.enabled = true;
+                thirdSpeed.enabled = false;
                 break;
             case 3:
-                secondSpeed.color = new Color32(255, 255, 255, 255);
-                thirdSpeed.color = new Color32(255, 255, 255, 255);
+                secondSpeed.enabled = true;
+                thirdSpeed.enabled = true;
                 break;
 
         }
@@ -79,7 +91,7 @@ public class GameManager : MonoBehaviour {
     public void Reward(int score, int coin) {
 
         Score += score;
-
+        ScoreAnimator.SetTrigger("ScorePop");
         //(LATER) If exactly on line >> give 5 points else 2
 
         Coins += coin;
@@ -121,5 +133,26 @@ public class GameManager : MonoBehaviour {
 
         }
     }
+
+
+    // UI BUTTONS
+
+    public void OnPauseClick() {
+        Time.timeScale = 0;
+        pauseOverlayPanel.SetActive(true);
+    }
+
+    public void OnResumeClick() {
+        Time.timeScale = 1;
+        pauseOverlayPanel.SetActive(false);
+    }
+
+    public void OnRestartClick() {
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+
+    }
+
+
 
 }

@@ -46,22 +46,27 @@ public class CheckResult : MonoBehaviour {
         }
     }
 
-    void ResetGame() {
+    public void ResetGame() {
 
         FindObjectOfType<GameManager>().StartGame();
         FindObjectOfType<BottleScript>().ResetBottle();
         FindObjectOfType<DispenserScript>().ResetDispenser();
         checkGameBool = false;
         gameFinishedBool = false;
+        FindObjectOfType<BottleScript>().fillmentLineSlideUpAnim.SetBool("SlideCurrentLine", false);
 
     }
 
     public IEnumerator NextLevel() {
 
+        FindObjectOfType<BottleScript>().fillmentLineSlideUpAnim.SetBool("SlideCurrentLine", true);
+        FindObjectOfType<GameManager>().goalFillLineAnim.SetBool("LineSlideIn", true);
+
+        yield return new WaitForSeconds(0.4f);
+
+        FindObjectOfType<GameManager>().goalFillLineAnim.SetBool("LineSlideOut", false);
 
         yield return new WaitForSeconds(0.5f);
-
-        //Activate rigidbody on bottle and "Kick" it
 
         FindObjectOfType<GameManager>().Reward(1, 2);
 
@@ -72,11 +77,20 @@ public class CheckResult : MonoBehaviour {
 
     public IEnumerator GameOver() {
 
+        FindObjectOfType<BottleScript>().fillmentLineSlideUpAnim.SetBool("SlideCurrentLine", true);
+
         FindObjectOfType<BottleScript>().FillAlpha();
 
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(0.5f);
 
-        ResetGame();
+        FindObjectOfType<BottleScript>().bottleAnim.SetBool("Cap", true);
+
+        yield return new WaitForSeconds(0.4f);
+
+        // END SCREEN panel and UI animations
+        FindObjectOfType<GameManager>().endScreenOverlayPanel.SetActive(true);
+        FindObjectOfType<GameManager>().RestartAnim.SetTrigger("RotateRestartButton");
+        FindObjectOfType<GameManager>().ShopAnim.SetTrigger("ScaleShopButton");
 
         FindObjectOfType<GameManager>().Reward(0);
 

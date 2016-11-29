@@ -15,14 +15,16 @@ public class BottleScript : MonoBehaviour {
     public float bottleFillAmount = 0;
 
     public Vector3 SlideVector;
+    public Sprite Cap;
 
     [HideInInspector]
-    public Animator bottleFillmentAnim, bottleAnim;
+    public Animator bottleFillmentAnim, bottleAnim, fillmentLineSlideUpAnim;
 
     void Awake() {
         fillment = GetComponentsInChildren<Image>()[1];
         bottleFillmentAnim = GetComponentsInChildren<Animator>()[1];
         bottleAnim = GetComponent<Animator>();
+        fillmentLineSlideUpAnim = GetComponentsInChildren<Animator>()[2];
         rb = GetComponent<Rigidbody2D>();
     }
 
@@ -53,8 +55,6 @@ public class BottleScript : MonoBehaviour {
         rb.AddForceAtPosition(new Vector2(Random.Range(-10, 10),
           Random.Range(-10, 10)), new Vector2(5, Random.Range(-15, -25)));
 
-
-
     }
 
     IEnumerator ResetBottlePos() {
@@ -83,6 +83,11 @@ public class BottleScript : MonoBehaviour {
 
         GameManager.resetingGame = false;
 
+        yield return new WaitForSeconds(0.1f);
+
+        FindObjectOfType<GameManager>().goalFillLineAnim.SetBool("LineSlideIn", false);
+
+
     }
 
     public void ResetBottle() {
@@ -90,7 +95,6 @@ public class BottleScript : MonoBehaviour {
         bottleFillAmount = 0;
         bottleFillmentAnim.SetBool("FadeAlpha", false);
         fillment.color = new Color32(255, 255, 255, 0);
-
 
     }
 
@@ -100,3 +104,5 @@ public class BottleScript : MonoBehaviour {
     }
 
 }
+
+
