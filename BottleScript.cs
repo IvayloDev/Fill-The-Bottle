@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class BottleScript : MonoBehaviour {
 
     public int minAmount, maxAmount;
+    public Color32 liquidColor;
 
     private Rigidbody2D rb;
 
@@ -15,7 +16,8 @@ public class BottleScript : MonoBehaviour {
     public float bottleFillAmount = 0;
 
     public Vector3 SlideVector;
-    public Sprite Cap;
+
+    public string CapName;
 
     [HideInInspector]
     public Animator bottleFillmentAnim, bottleAnim, fillmentLineSlideUpAnim;

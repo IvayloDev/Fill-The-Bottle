@@ -7,10 +7,13 @@ public class GameManager : MonoBehaviour {
 
     public static GameManager instance;
 
-    public Text scoreTxt, coinTxt;
-    private int Score;
-    private int HighScore;
-    private int Coins;
+    public Text scoreTxt, coinTxt, HighScoreTxt;
+    [HideInInspector]
+    public int Score;
+    [HideInInspector]
+    public int HighScore;
+    [HideInInspector]
+    public int Coins;
 
     private int pourSpeed;
 
@@ -19,18 +22,22 @@ public class GameManager : MonoBehaviour {
     private BottleScript bottle;
     private DispenserScript dispenser;
 
-    public GameObject goalFillLine, currentFillLine;
-
+    public GameObject goalFillLine, PauseGO, PourAnimGO;
+    private GameObject currentFillLine;
     // Panels
-    public GameObject pauseOverlayPanel, endScreenOverlayPanel;
+    public GameObject pauseOverlayPanel, endScreenOverlayPanel, HighScoreTxtGO, Shop;
     public Image secondSpeed, thirdSpeed;
-
+    public Text CoinsShop;
     // Animators
-    public Animator ScoreAnimator, goalFillLineAnim, RestartAnim, ShopAnim;
+    public Animator ScoreAnimator, goalFillLineAnim, RestartAnim,
+        ShopAnim, ClickToStartAnim, DispenserAnim;
 
     float curFillLineAmount;
 
     void Awake() {
+
+        Coins = PlayerPrefs.GetInt("Coins");
+        HighScore = PlayerPrefs.GetInt("HighScore");
 
         if (instance != null) {
             Debug.LogError("More than one GameManager in scene");
@@ -46,15 +53,26 @@ public class GameManager : MonoBehaviour {
     void Start() {
 
         StartGame();
-
     }
 
     public void StartGame() {
 
+        currentFillLine = GameObject.Find("FillmentLine");
+
+        if (currentFillLine == null) {
+            return;
+        }
+
+        PourAnimGO.SetActive(false);
+
+        PauseGO.SetActive(true);
+        HighScoreTxtGO.SetActive(false);
         endScreenOverlayPanel.SetActive(false);
         pauseOverlayPanel.SetActive(false);
 
         goalFillLineAnim.SetBool("LineSlideOut", true);
+
+        PourAnimGO.GetComponent<Image>().color = FindObjectOfType<BottleScript>().liquidColor;
 
         // Set random position for the fill line the user has to reach.
         goalFillLine.transform.localPosition = new Vector3(-80, Random.Range(bottle.minAmount, bottle.maxAmount), 0);
@@ -107,16 +125,38 @@ public class GameManager : MonoBehaviour {
 
         ManageInput();
 
+        HighScoreTxt.text = HighScore.ToString();
         scoreTxt.text = Score.ToString();
-        coinTxt.text = Coins.ToString();
 
+        coinTxt.text = Coins.ToString();
+        CoinsShop.text = Coins.ToString();
+
+        //If players' score get bigger than the highscore.
+
+        if (Score >= HighScore) {
+            HighScore = Score;
+        }
+
+
+        if (Score == 0) {
+            scoreTxt.enabled = false;
+        } else {
+            scoreTxt.enabled = true;
+        }
+
+        if (bottle == null) {
+            return;
+        }
         //Keep GameObject with attached BoxCollider2D on the max fill value
         curFillLineAmount = bottle.fillment.GetComponent<RectTransform>().sizeDelta.y * bottle.fillment.fillAmount;
         currentFillLine.transform.localPosition = new Vector3(0, curFillLineAmount, 0);
-
     }
 
     void ManageInput() {
+
+        if (Shop.activeSelf) {
+            return;
+        }
 
         if (Input.GetMouseButton(0) && !fingerReleased && !resetingGame) {
             // Player is holding the screen --> fill
@@ -124,18 +164,53 @@ public class GameManager : MonoBehaviour {
             bottle.Fill(0.2f, pourSpeed);
             dispenser.Dispense(0.2f, pourSpeed);
 
+            ClickToStartAnim.SetTrigger("Fade");
+            DispenserAnim.SetBool("DispenserUp", false);
+            DispenserAnim.SetBool("DispenserDown", true);
+            PourAnimGO.SetActive(true);
 
         }
 
         if (Input.GetMouseButtonUp(0)) {
 
             fingerReleased = true;
+            PourAnimGO.SetActive(false);
+
 
         }
     }
 
+    public void OnApplicationPause(bool pause) {
+
+        if (pause) {
+            PlayerPrefs.SetInt("Coins", Coins);
+            PlayerPrefs.SetInt("HighScore", HighScore);
+        }
+    }
+
+    public void OnApplicationQuit() {
+
+        PlayerPrefs.SetInt("Coins", Coins);
+        PlayerPrefs.SetInt("HighScore", HighScore);
+
+    }
+
+
+
 
     // UI BUTTONS
+
+    public void OnShopOpen() {
+
+        Shop.SetActive(true);
+
+    }
+
+    public void OnShopClose() {
+
+        Shop.SetActive(false);
+
+    }
 
     public void OnPauseClick() {
         Time.timeScale = 0;
@@ -148,11 +223,8 @@ public class GameManager : MonoBehaviour {
     }
 
     public void OnRestartClick() {
-
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-
     }
-
 
 
 }

@@ -7,6 +7,12 @@ public class CheckResult : MonoBehaviour {
     private bool checkGameBool;
     private bool gameFinishedBool;
 
+    private GameManager gm;
+
+    void Awake() {
+        gm = FindObjectOfType<GameManager>();
+    }
+
     void Update() {
 
         if (GameManager.fingerReleased && !gameFinishedBool) {
@@ -48,7 +54,7 @@ public class CheckResult : MonoBehaviour {
 
     public void ResetGame() {
 
-        FindObjectOfType<GameManager>().StartGame();
+        gm.StartGame();
         FindObjectOfType<BottleScript>().ResetBottle();
         FindObjectOfType<DispenserScript>().ResetDispenser();
         checkGameBool = false;
@@ -59,16 +65,19 @@ public class CheckResult : MonoBehaviour {
 
     public IEnumerator NextLevel() {
 
+        gm.DispenserAnim.SetBool("DispenserDown", false);
+        gm.DispenserAnim.SetBool("DispenserUp", true);
+
         FindObjectOfType<BottleScript>().fillmentLineSlideUpAnim.SetBool("SlideCurrentLine", true);
-        FindObjectOfType<GameManager>().goalFillLineAnim.SetBool("LineSlideIn", true);
+        gm.goalFillLineAnim.SetBool("LineSlideIn", true);
 
         yield return new WaitForSeconds(0.4f);
 
-        FindObjectOfType<GameManager>().goalFillLineAnim.SetBool("LineSlideOut", false);
+        gm.goalFillLineAnim.SetBool("LineSlideOut", false);
 
         yield return new WaitForSeconds(0.5f);
 
-        FindObjectOfType<GameManager>().Reward(1, 2);
+        gm.Reward(1, 2);
 
         FindObjectOfType<BottleScript>().KickBottle();
 
@@ -77,24 +86,38 @@ public class CheckResult : MonoBehaviour {
 
     public IEnumerator GameOver() {
 
+        gm.DispenserAnim.SetBool("DispenserDown", false);
+        gm.DispenserAnim.SetBool("DispenserUp", true);
+
         FindObjectOfType<BottleScript>().fillmentLineSlideUpAnim.SetBool("SlideCurrentLine", true);
 
         FindObjectOfType<BottleScript>().FillAlpha();
 
         yield return new WaitForSeconds(0.5f);
 
-        FindObjectOfType<BottleScript>().bottleAnim.SetBool("Cap", true);
-
+        if (gm.Score != 0) {
+            FindObjectOfType<BottleScript>().bottleAnim.SetBool(FindObjectOfType<BottleScript>().CapName
+                + " Cap", true);
+        }
         yield return new WaitForSeconds(0.4f);
 
         // END SCREEN panel and UI animations
-        FindObjectOfType<GameManager>().endScreenOverlayPanel.SetActive(true);
-        FindObjectOfType<GameManager>().RestartAnim.SetTrigger("RotateRestartButton");
-        FindObjectOfType<GameManager>().ShopAnim.SetTrigger("ScaleShopButton");
+        if (gm.Score == 0) {
+            ResetGame();
 
-        FindObjectOfType<GameManager>().Reward(0);
+        } else {
 
+            gm.PauseGO.SetActive(false);
+
+            PlayerPrefs.SetInt("HighScore", gm.HighScore);
+            PlayerPrefs.SetInt("Coins", gm.Coins);
+
+            gm.HighScoreTxtGO.SetActive(true);
+            gm.endScreenOverlayPanel.SetActive(true);
+            gm.RestartAnim.SetTrigger("RotateRestartButton");
+            gm.ShopAnim.SetTrigger("ScaleShopButton");
+            gm.Reward(0);
+
+        }
     }
-
-
 }
