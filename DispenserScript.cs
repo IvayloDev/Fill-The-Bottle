@@ -13,7 +13,14 @@ public class DispenserScript : MonoBehaviour {
         if (FindObjectOfType<BottleScript>() == null) {
             return;
         }
+
+        ChangeDispenserLiquid();
+    }
+
+    public void ChangeDispenserLiquid() {
+
         GetComponent<Image>().color = FindObjectOfType<BottleScript>().liquidColor;
+
     }
 
     public void Dispense(float amount, int speed) {

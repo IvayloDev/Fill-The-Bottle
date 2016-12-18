@@ -19,11 +19,11 @@ public class ShopScript : MonoBehaviour {
     public Image image;
 
     public static bool bottleChanged;
-
-    private GameObject currBottle;
+    private ShopController shopController;
 
     void Awake() {
 
+        shopController = FindObjectOfType<ShopController>();
         image = GetComponent<Image>();
 
         lastSelectedBottleIndex = PlayerPrefs.GetInt(
@@ -36,15 +36,13 @@ public class ShopScript : MonoBehaviour {
 
     IEnumerator SetDefaultBottle() {
 
-        yield return new WaitForEndOfFrame();
+        yield return new WaitForSeconds(0.05f);
 
         if (FindObjectOfType<ShopController>().firstGame && firstGameInt == 0) {
-            if (image.sprite.name == "water2" || image.sprite.name == "water") {
-                Debug.Log("f");
-                currBottle = (GameObject)Instantiate(Resources.Load(unlockedSprite.name.ToString()),
-                     FindObjectOfType<ShopController>().SpawnLocation,
-                     Quaternion.identity,
-                     FindObjectOfType<ShopController>().BottleParentHolder.transform);
+            if (image.sprite.name == "water2" || image.sprite.name == "Water") {
+
+
+                Debug.Log("ShopScript Default setting2");
 
                 image.sprite = selectedSprite;
                 PlayerPrefs.SetInt(selectedSprite.name.ToString(), 1);
@@ -52,11 +50,12 @@ public class ShopScript : MonoBehaviour {
                 PlayerPrefs.Save();
             }
         }
-
     }
+
     void Start() {
 
         StartCoroutine(SetDefaultBottle());
+
 
         if (bottleSavedState == 1) {
             image.sprite = unlockedSprite;
@@ -69,12 +68,14 @@ public class ShopScript : MonoBehaviour {
         if (lastSelectedBottleIndex == 1) {
             image.sprite = selectedSprite;
 
-            currBottle = (GameObject)Instantiate(Resources.Load(unlockedSprite.name.ToString()),
-                   FindObjectOfType<ShopController>().SpawnLocation,
-                   Quaternion.identity,
-                   FindObjectOfType<ShopController>().BottleParentHolder.transform);
+            Destroy(shopController.currBottle);
+
+            shopController.currBottle = (GameObject)Instantiate(Resources.Load(unlockedSprite.name.ToString()),
+                       FindObjectOfType<ShopController>().BottleParentHolder.transform, false);
+
         }
     }
+
 
     public void SaveBottle() {
 
@@ -82,10 +83,12 @@ public class ShopScript : MonoBehaviour {
 
             FindObjectOfType<GameManager>().Coins -= price;
 
-            currBottle = (GameObject)Instantiate(Resources.Load(unlockedSprite.name.ToString()),
-                   FindObjectOfType<ShopController>().SpawnLocation,
-                   Quaternion.identity,
-                   FindObjectOfType<ShopController>().BottleParentHolder.transform);
+            Destroy(shopController.currBottle);
+
+            shopController.currBottle = (GameObject)Instantiate(Resources.Load(unlockedSprite.name.ToString()),
+                       FindObjectOfType<ShopController>().BottleParentHolder.transform, false);
+
+            FindObjectOfType<DispenserScript>().ChangeDispenserLiquid();
 
             bottleChanged = true;
 
@@ -101,10 +104,12 @@ public class ShopScript : MonoBehaviour {
         }
         if (image.sprite == unlockedSprite) {
 
-            currBottle = (GameObject)Instantiate(Resources.Load(unlockedSprite.name.ToString()),
-                   FindObjectOfType<ShopController>().SpawnLocation,
-                   Quaternion.identity,
-                   FindObjectOfType<ShopController>().BottleParentHolder.transform);
+            Destroy(shopController.currBottle);
+
+            shopController.currBottle = (GameObject)Instantiate(Resources.Load(unlockedSprite.name.ToString()),
+                        FindObjectOfType<ShopController>().BottleParentHolder.transform, false);
+
+            FindObjectOfType<DispenserScript>().ChangeDispenserLiquid();
 
             bottleChanged = true;
 
@@ -126,10 +131,13 @@ public class ShopScript : MonoBehaviour {
     public void ResetSelectedBottle() {
 
         PlayerPrefs.DeleteKey(selectedSprite.name.ToString() + "select");
+
         bottleChanged = false;
 
         if (image.sprite == selectedSprite) {
-            Destroy(currBottle);
+            Destroy(shopController.currBottle);
+
+            Debug.Log("Reseting");
             image.sprite = unlockedSprite;
 
         }
@@ -137,7 +145,6 @@ public class ShopScript : MonoBehaviour {
     }
 
     void Update() {
-
 
     }
 

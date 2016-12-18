@@ -8,7 +8,9 @@ public class ShopController : MonoBehaviour {
     public bool firstGame;
     private bool allReady;
     public GameObject BottleParentHolder;
-    public Vector3 SpawnLocation;
+
+    [HideInInspector]
+    public GameObject currBottle;
 
     public Animator CoinsAnim;
 
@@ -29,21 +31,31 @@ public class ShopController : MonoBehaviour {
         GetComponentsInChildren<ShopScript>()[index - 1].SaveBottle();
     }
 
-    void Start() {
+    void Awake() {
 
         FindObjectOfType<ShopScript>().firstGameInt = PlayerPrefs.GetInt("FirstGame", 0);
+
+
+        // SET LAST BOTTLE TO CURR BOTTLE ON START GAME
 
         for (int i = 0; i < 12; i++) {
 
             if (GetComponentsInChildren<ShopScript>()[i].bottleSavedState == 1) {
+
                 return;
+
             } else {
                 allReady = true;
+
             }
         }
 
         if (allReady) {
             firstGame = true;
+
+            currBottle = (GameObject)Instantiate(Resources.Load(
+              "Water"),
+                 FindObjectOfType<ShopController>().BottleParentHolder.transform, false);
 
             PlayerPrefs.SetInt("FirstGame", 1);
             PlayerPrefs.Save();

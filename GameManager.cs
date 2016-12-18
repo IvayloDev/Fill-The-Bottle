@@ -45,7 +45,6 @@ public class GameManager : MonoBehaviour {
             instance = this;
         }
 
-        bottle = FindObjectOfType<BottleScript>();
         dispenser = FindObjectOfType<DispenserScript>();
 
     }
@@ -57,11 +56,11 @@ public class GameManager : MonoBehaviour {
 
     public void StartGame() {
 
-        currentFillLine = GameObject.Find("FillmentLine");
+        Shop.SetActive(false);
 
-        if (currentFillLine == null) {
-            return;
-        }
+        bottle = FindObjectOfType<BottleScript>();
+
+        currentFillLine = GameObject.Find("FillmentLine");
 
         PourAnimGO.SetActive(false);
 
@@ -72,18 +71,20 @@ public class GameManager : MonoBehaviour {
 
         goalFillLineAnim.SetBool("LineSlideOut", true);
 
-        PourAnimGO.GetComponent<Image>().color = FindObjectOfType<BottleScript>().liquidColor;
+        PourAnimGO.GetComponent<Image>().color = bottle.liquidColor;
 
         // Set random position for the fill line the user has to reach.
+
         goalFillLine.transform.localPosition = new Vector3(-80, Random.Range(bottle.minAmount, bottle.maxAmount), 0);
 
         //Get random dispense speed.
         SetDispenseSpeed();
 
-
         fingerReleased = false;
 
     }
+
+
 
     void SetDispenseSpeed() {
 
