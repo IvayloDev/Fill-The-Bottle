@@ -13,7 +13,7 @@ public class ShopScript : MonoBehaviour {
     [HideInInspector]
     public int bottleSavedState;
     [HideInInspector]
-    public int lastSelectedBottleIndex, firstGameInt;
+    public int lastSelectedBottleIndex;
 
     [HideInInspector]
     public Image image;
@@ -31,31 +31,13 @@ public class ShopScript : MonoBehaviour {
 
         bottleSavedState = PlayerPrefs.GetInt(selectedSprite.name.ToString());
 
-
-    }
-
-    IEnumerator SetDefaultBottle() {
-
-        yield return new WaitForSeconds(0.05f);
-
-        if (FindObjectOfType<ShopController>().firstGame && firstGameInt == 0) {
-            if (image.sprite.name == "water2" || image.sprite.name == "Water") {
-
-
-                Debug.Log("ShopScript Default setting2");
-
-                image.sprite = selectedSprite;
-                PlayerPrefs.SetInt(selectedSprite.name.ToString(), 1);
-                PlayerPrefs.SetInt(selectedSprite.name.ToString() + "select", 1);
-                PlayerPrefs.Save();
-            }
-        }
     }
 
     void Start() {
 
-        StartCoroutine(SetDefaultBottle());
-
+        if (image.sprite.name == "Water Bottle" && FindObjectOfType<ShopController>().firstGameInt == 0) {
+            return;
+        }
 
         if (bottleSavedState == 1) {
             image.sprite = unlockedSprite;
@@ -82,6 +64,9 @@ public class ShopScript : MonoBehaviour {
         if (image.sprite == lockedSprite && FindObjectOfType<GameManager>().Coins >= price) {
 
             FindObjectOfType<GameManager>().Coins -= price;
+            PlayerPrefs.SetInt("Coins", FindObjectOfType<GameManager>().Coins);
+
+            GameManager.adShownCounter++;
 
             Destroy(shopController.currBottle);
 
@@ -123,8 +108,6 @@ public class ShopScript : MonoBehaviour {
 
             PlayerPrefs.Save();
 
-        } else {
-            Debug.Log("NO MONEY");
         }
     }
 
@@ -137,7 +120,6 @@ public class ShopScript : MonoBehaviour {
         if (image.sprite == selectedSprite) {
             Destroy(shopController.currBottle);
 
-            Debug.Log("Reseting");
             image.sprite = unlockedSprite;
 
         }

@@ -9,6 +9,9 @@ public class CheckResult : MonoBehaviour {
 
     private GameManager gm;
 
+    [HideInInspector]
+    public bool overFilled;
+
     void Awake() {
         gm = FindObjectOfType<GameManager>();
     }
@@ -30,8 +33,6 @@ public class CheckResult : MonoBehaviour {
         if (!checkGameBool) {
 
             StartCoroutine(GameOver());
-
-
         }
 
     }
@@ -55,20 +56,25 @@ public class CheckResult : MonoBehaviour {
     public void ResetGame() {
 
         gm.StartGame();
+
         FindObjectOfType<BottleScript>().ResetBottle();
         FindObjectOfType<DispenserScript>().ResetDispenser();
         checkGameBool = false;
         gameFinishedBool = false;
         FindObjectOfType<BottleScript>().fillmentLineSlideUpAnim.SetBool("SlideCurrentLine", false);
 
+
     }
 
     public IEnumerator NextLevel() {
+
+        AudioManager.instance.PlaySound("Won");
 
         gm.DispenserAnim.SetBool("DispenserDown", false);
         gm.DispenserAnim.SetBool("DispenserUp", true);
 
         FindObjectOfType<BottleScript>().fillmentLineSlideUpAnim.SetBool("SlideCurrentLine", true);
+
         gm.goalFillLineAnim.SetBool("LineSlideIn", true);
 
         yield return new WaitForSeconds(0.4f);
@@ -82,9 +88,12 @@ public class CheckResult : MonoBehaviour {
         FindObjectOfType<BottleScript>().KickBottle();
 
         ResetGame();
+
     }
 
     public IEnumerator GameOver() {
+
+        AudioManager.instance.PlaySound("Lost");
 
         gm.DispenserAnim.SetBool("DispenserDown", false);
         gm.DispenserAnim.SetBool("DispenserUp", true);
@@ -96,18 +105,20 @@ public class CheckResult : MonoBehaviour {
         yield return new WaitForSeconds(0.5f);
 
         if (gm.Score != 0) {
+
+
             FindObjectOfType<BottleScript>().bottleAnim.SetBool(FindObjectOfType<BottleScript>().CapName
                 + " Cap", true);
         }
+
         yield return new WaitForSeconds(0.4f);
 
         // END SCREEN panel and UI animations
         if (gm.Score == 0) {
+
             ResetGame();
 
         } else {
-
-            gm.PauseGO.SetActive(false);
 
             PlayerPrefs.SetInt("HighScore", gm.HighScore);
             PlayerPrefs.SetInt("Coins", gm.Coins);

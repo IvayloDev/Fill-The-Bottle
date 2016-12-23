@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Advertisements;
+using UnityEngine.EventSystems;
 
 public class GameManager : MonoBehaviour {
 
@@ -15,19 +17,23 @@ public class GameManager : MonoBehaviour {
     [HideInInspector]
     public int Coins;
 
+    [HideInInspector]
+    public static int adShownCounter;
     private int pourSpeed;
 
     public static bool fingerReleased, resetingGame;
 
     private BottleScript bottle;
     private DispenserScript dispenser;
+    public AudioSource pourAudio;
 
-    public GameObject goalFillLine, PauseGO, PourAnimGO;
+    public GameObject goalFillLine, PourAnimGO;
     private GameObject currentFillLine;
     // Panels
-    public GameObject pauseOverlayPanel, endScreenOverlayPanel, HighScoreTxtGO, Shop;
+    public GameObject endScreenOverlayPanel, HighScoreTxtGO, Shop;
     public Image secondSpeed, thirdSpeed;
     public Text CoinsShop;
+    public GameObject WatchAdButtonGO;
     // Animators
     public Animator ScoreAnimator, goalFillLineAnim, RestartAnim,
         ShopAnim, ClickToStartAnim, DispenserAnim;
@@ -36,6 +42,7 @@ public class GameManager : MonoBehaviour {
 
     void Awake() {
 
+        adShownCounter = PlayerPrefs.GetInt("adShown", 0);
         Coins = PlayerPrefs.GetInt("Coins");
         HighScore = PlayerPrefs.GetInt("HighScore");
 
@@ -64,18 +71,18 @@ public class GameManager : MonoBehaviour {
 
         PourAnimGO.SetActive(false);
 
-        PauseGO.SetActive(true);
         HighScoreTxtGO.SetActive(false);
         endScreenOverlayPanel.SetActive(false);
-        pauseOverlayPanel.SetActive(false);
 
         goalFillLineAnim.SetBool("LineSlideOut", true);
 
-        PourAnimGO.GetComponent<Image>().color = bottle.liquidColor;
+        if (FindObjectOfType<BottleScript>() != null) {
+            PourAnimGO.GetComponent<Image>().color = bottle.liquidColor;
 
-        // Set random position for the fill line the user has to reach.
+            // Set random position for the fill line the user has to reach.
 
-        goalFillLine.transform.localPosition = new Vector3(-80, Random.Range(bottle.minAmount, bottle.maxAmount), 0);
+            goalFillLine.transform.localPosition = new Vector3(-100, Random.Range(bottle.minAmount, bottle.maxAmount), 0);
+        }
 
         //Get random dispense speed.
         SetDispenseSpeed();
@@ -124,6 +131,19 @@ public class GameManager : MonoBehaviour {
 
     void Update() {
 
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            Application.Quit();
+        }
+
+        if (adShownCounter >= 3 && adShownCounter <= 4) {
+            WatchAdButtonGO.SetActive(false);
+        }
+
+        if (adShownCounter > 5) {
+            WatchAdButtonGO.SetActive(true);
+            adShownCounter = 0;
+        }
+
         ManageInput();
 
         HighScoreTxt.text = HighScore.ToString();
@@ -155,6 +175,11 @@ public class GameManager : MonoBehaviour {
 
     void ManageInput() {
 
+        if (bottle.fillment.fillAmount == 1) {
+            fingerReleased = true;
+            PourAnimGO.SetActive(false);
+        }
+
         if (Shop.activeSelf) {
             return;
         }
@@ -165,6 +190,8 @@ public class GameManager : MonoBehaviour {
             bottle.Fill(0.2f, pourSpeed);
             dispenser.Dispense(0.2f, pourSpeed);
 
+            pourAudio.enabled = true;
+
             ClickToStartAnim.SetTrigger("Fade");
             DispenserAnim.SetBool("DispenserUp", false);
             DispenserAnim.SetBool("DispenserDown", true);
@@ -174,6 +201,7 @@ public class GameManager : MonoBehaviour {
 
         if (Input.GetMouseButtonUp(0)) {
 
+            pourAudio.enabled = false;
             fingerReleased = true;
             PourAnimGO.SetActive(false);
 
@@ -186,6 +214,7 @@ public class GameManager : MonoBehaviour {
         if (pause) {
             PlayerPrefs.SetInt("Coins", Coins);
             PlayerPrefs.SetInt("HighScore", HighScore);
+            PlayerPrefs.SetInt("adShown", adShownCounter);
         }
     }
 
@@ -193,7 +222,7 @@ public class GameManager : MonoBehaviour {
 
         PlayerPrefs.SetInt("Coins", Coins);
         PlayerPrefs.SetInt("HighScore", HighScore);
-
+        PlayerPrefs.SetInt("adShown", adShownCounter);
     }
 
 
@@ -201,29 +230,54 @@ public class GameManager : MonoBehaviour {
 
     // UI BUTTONS
 
+    public void OnWatchAdClick() {
+
+        AudioManager.instance.PlaySound("ButtonClick");
+
+        if (Advertisement.IsReady("rewardedVideo")) {
+            var options = new ShowOptions { resultCallback = HandleShowResult };
+            Advertisement.Show("rewardedVideo", options);
+        }
+    }
+
+    private void HandleShowResult(ShowResult result) {
+        switch (result) {
+            case ShowResult.Finished:
+                Debug.Log("The ad was successfully shown.");
+                //
+                // YOUR CODE TO REWARD THE GAMER
+                Coins += 5;
+                adShownCounter++;
+
+                break;
+            case ShowResult.Skipped:
+                Debug.Log("The ad was skipped before reaching the end.");
+                break;
+            case ShowResult.Failed:
+                Debug.LogError("The ad failed to be shown.");
+                break;
+        }
+    }
+
+
     public void OnShopOpen() {
 
+        AudioManager.instance.PlaySound("ButtonClick");
         Shop.SetActive(true);
 
     }
 
     public void OnShopClose() {
 
+        AudioManager.instance.PlaySound("ButtonClick");
         Shop.SetActive(false);
 
     }
 
-    public void OnPauseClick() {
-        Time.timeScale = 0;
-        pauseOverlayPanel.SetActive(true);
-    }
-
-    public void OnResumeClick() {
-        Time.timeScale = 1;
-        pauseOverlayPanel.SetActive(false);
-    }
 
     public void OnRestartClick() {
+
+        AudioManager.instance.PlaySound("ButtonClick");
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 

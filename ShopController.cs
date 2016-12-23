@@ -14,8 +14,10 @@ public class ShopController : MonoBehaviour {
 
     public Animator CoinsAnim;
 
-    public void OnButtonPress(int index) {
+    [HideInInspector]
+    public int firstGameInt;
 
+    public void OnButtonPress(int index) {
 
         if (GetComponentsInChildren<ShopScript>()[index - 1].price > FindObjectOfType<GameManager>().Coins
             && GetComponentsInChildren<ShopScript>()[index - 1].image.sprite == GetComponentsInChildren<ShopScript>()[index - 1].lockedSprite) {
@@ -33,11 +35,9 @@ public class ShopController : MonoBehaviour {
 
     void Awake() {
 
-        FindObjectOfType<ShopScript>().firstGameInt = PlayerPrefs.GetInt("FirstGame", 0);
-
+        firstGameInt = PlayerPrefs.GetInt("FirstGame", 0);
 
         // SET LAST BOTTLE TO CURR BOTTLE ON START GAME
-
         for (int i = 0; i < 12; i++) {
 
             if (GetComponentsInChildren<ShopScript>()[i].bottleSavedState == 1) {
@@ -50,16 +50,35 @@ public class ShopController : MonoBehaviour {
             }
         }
 
+
+
         if (allReady) {
             firstGame = true;
 
-            currBottle = (GameObject)Instantiate(Resources.Load(
-              "Water"),
-                 FindObjectOfType<ShopController>().BottleParentHolder.transform, false);
+            if (firstGameInt == 0) {
+                for (int i = 0; i < 12; i++) {
 
-            PlayerPrefs.SetInt("FirstGame", 1);
-            PlayerPrefs.Save();
+                    if (GetComponentsInChildren<ShopScript>()[i].image.sprite.name == "Water Bottle" ||
+                        GetComponentsInChildren<ShopScript>()[i].image.sprite.name == "Water" ||
+                        GetComponentsInChildren<ShopScript>()[i].image.sprite.name == "water2") {
 
+                        Debug.Log(GetComponentsInChildren<ShopScript>()[i].selectedSprite);
+
+
+                        GetComponentsInChildren<ShopScript>()[i].image.sprite = GetComponentsInChildren<ShopScript>()[i].selectedSprite;
+                        PlayerPrefs.SetInt(GetComponentsInChildren<ShopScript>()[i].selectedSprite.name.ToString(), 1);
+                        PlayerPrefs.SetInt(GetComponentsInChildren<ShopScript>()[i].selectedSprite.name.ToString() + "select", 1);
+                        PlayerPrefs.Save();
+                    }
+                }
+
+                currBottle = (GameObject)Instantiate(Resources.Load(
+                  "Water"),
+                     FindObjectOfType<ShopController>().BottleParentHolder.transform, false);
+
+                PlayerPrefs.SetInt("FirstGame", 1);
+                PlayerPrefs.Save();
+            }
         }
     }
 
