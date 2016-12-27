@@ -66,10 +66,9 @@ public class GameManager : MonoBehaviour {
 
     public void StartGame() {
 
-
-        if (firstGame == 0) {
-            PlayerPrefs.SetInt("first", 1);
-            PlayerPrefs.Save();
+        if (firstGame == 1) {
+            InfoText.SetActive(false);
+        } else if (firstGame == 0) {
             InfoText.SetActive(true);
         }
 
@@ -140,7 +139,6 @@ public class GameManager : MonoBehaviour {
     }
 
     void Update() {
-        Debug.Log(firstGame);
 
         if (Input.GetKeyDown(KeyCode.Escape)) {
             Application.Quit();
@@ -206,6 +204,12 @@ public class GameManager : MonoBehaviour {
             dispenser.Dispense(0.2f, pourSpeed);
 
             pourAudio.enabled = true;
+
+            firstGame = 1;
+            PlayerPrefs.SetInt("first", firstGame);
+            PlayerPrefs.Save();
+
+            Debug.Log(firstGame);
 
             ClickToStartAnim.SetTrigger("Fade");
             DispenserAnim.SetBool("DispenserUp", false);

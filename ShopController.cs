@@ -62,9 +62,6 @@ public class ShopController : MonoBehaviour {
                         GetComponentsInChildren<ShopScript>()[i].image.sprite.name == "Water" ||
                         GetComponentsInChildren<ShopScript>()[i].image.sprite.name == "water2") {
 
-                        Debug.Log(GetComponentsInChildren<ShopScript>()[i].selectedSprite);
-
-
                         GetComponentsInChildren<ShopScript>()[i].image.sprite = GetComponentsInChildren<ShopScript>()[i].selectedSprite;
                         PlayerPrefs.SetInt(GetComponentsInChildren<ShopScript>()[i].selectedSprite.name.ToString(), 1);
                         PlayerPrefs.SetInt(GetComponentsInChildren<ShopScript>()[i].selectedSprite.name.ToString() + "select", 1);
