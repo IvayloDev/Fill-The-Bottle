@@ -21,6 +21,8 @@ public class GameManager : MonoBehaviour {
     public static int adShownCounter;
     private int pourSpeed;
 
+    private int firstGame;
+
     public static bool fingerReleased, resetingGame;
 
     private BottleScript bottle;
@@ -33,7 +35,7 @@ public class GameManager : MonoBehaviour {
     public GameObject endScreenOverlayPanel, HighScoreTxtGO, Shop;
     public Image secondSpeed, thirdSpeed;
     public Text CoinsShop;
-    public GameObject WatchAdButtonGO;
+    public GameObject WatchAdButtonGO, InfoText;
     // Animators
     public Animator ScoreAnimator, goalFillLineAnim, RestartAnim,
         ShopAnim, ClickToStartAnim, DispenserAnim;
@@ -42,6 +44,7 @@ public class GameManager : MonoBehaviour {
 
     void Awake() {
 
+        firstGame = PlayerPrefs.GetInt("first", 0);
         adShownCounter = PlayerPrefs.GetInt("adShown", 0);
         Coins = PlayerPrefs.GetInt("Coins");
         HighScore = PlayerPrefs.GetInt("HighScore");
@@ -62,6 +65,13 @@ public class GameManager : MonoBehaviour {
     }
 
     public void StartGame() {
+
+
+        if (firstGame == 0) {
+            PlayerPrefs.SetInt("first", 1);
+            PlayerPrefs.Save();
+            InfoText.SetActive(true);
+        }
 
         Shop.SetActive(false);
 
@@ -130,6 +140,7 @@ public class GameManager : MonoBehaviour {
     }
 
     void Update() {
+        Debug.Log(firstGame);
 
         if (Input.GetKeyDown(KeyCode.Escape)) {
             Application.Quit();
@@ -182,6 +193,10 @@ public class GameManager : MonoBehaviour {
 
         if (Shop.activeSelf) {
             return;
+        }
+
+        if (Input.GetMouseButtonDown(0)) {
+            InfoText.SetActive(false);
         }
 
         if (Input.GetMouseButton(0) && !fingerReleased && !resetingGame) {
